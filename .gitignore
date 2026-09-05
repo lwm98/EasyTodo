@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dist-main/
+release/
+*.log
+.DS_Store
+.*smoke-data*/
+*smoke*.png
+.logic-test-*/
