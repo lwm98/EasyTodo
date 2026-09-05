@@ -9,7 +9,7 @@
     <img src="https://img.shields.io/badge/local-first-EBCB89?style=flat-square" alt="Local first" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-795638?style=flat-square" alt="MIT License" /></a>
   </p>
-  <p><a href="https://github.com/lwm98/EasyTodo/releases/download/v1.0.0/EasyTodo-Setup-1.0.0-x64.exe"><strong>下载 Windows 安装包</strong></a> · <a href="#应用界面">应用界面</a> · <a href="#开发与构建">开发与构建</a> · <a href="https://github.com/lwm98/EasyTodo/issues">反馈建议</a></p>
+  <p><a href="https://lwm98.github.io/EasyTodo/">项目主页</a> · <a href="https://github.com/lwm98/EasyTodo/releases/download/v1.0.0/EasyTodo-Setup-1.0.0-x64.exe"><strong>下载 Windows 安装包</strong></a> · <a href="#应用界面">应用界面</a> · <a href="#开发与构建">开发与构建</a> · <a href="https://github.com/lwm98/EasyTodo/issues">反馈建议</a></p>
 </div>
 
 ## 把小事记下来，把轻松留给自己
