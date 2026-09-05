@@ -12,6 +12,11 @@ contextBridge.exposeInMainWorld('easyTodo', {
   showPanelFromHandle: () => ipcRenderer.send('panel:show-inactive'),
   requestCollapse: () => ipcRenderer.send('panel:collapse'),
   hidePanel: () => ipcRenderer.send('panel:hide'),
+  onSettingsChanged: (callback: (settings: Settings) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, settings: Settings) => callback(settings);
+    ipcRenderer.on('settings:changed', listener);
+    return () => ipcRenderer.removeListener('settings:changed', listener);
+  },
   onFocusComposer: (callback: () => void) => {
     const listener = () => callback();
     ipcRenderer.on('panel:focus-composer', listener);

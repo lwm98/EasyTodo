@@ -8,8 +8,11 @@ import {
   RestoreIcon,
   SettingsIcon,
   TrashIcon,
+  SunIcon,
 } from './icons';
-import type { AppState, Settings, ThemePreference, Todo } from './types';
+import type { AppState, Settings, Todo } from './types';
+import brandIcon from '../../assets/icon.svg';
+import { applyTheme } from './theme';
 
 type View = 'active' | 'archive' | 'settings';
 
@@ -49,11 +52,6 @@ function formatCreatedTime(iso: string): string {
   return new Intl.DateTimeFormat('zh-CN', {
     hour: '2-digit', minute: '2-digit', hour12: false,
   }).format(new Date(iso));
-}
-
-function applyTheme(preference: ThemePreference): void {
-  const dark = preference === 'dark' || (preference === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
 }
 
 export function App() {
@@ -231,7 +229,7 @@ export function App() {
   return (
     <main className="app-shell" onPointerEnter={cancelCollapse} onPointerLeave={scheduleCollapse}>
       <aside className="sidebar">
-        <div className="brand"><CheckIcon /></div>
+        <div className="brand"><img src={brandIcon} alt="EasyTodo 笑脸便签" /></div>
         <nav aria-label="主菜单">
           <NavButton label="待办" active={view === 'active'} count={activeTodos.length} onClick={() => setView('active')}><InboxIcon /></NavButton>
           <NavButton label="已归档" active={view === 'archive'} onClick={() => setView('archive')}><ArchiveIcon /></NavButton>
@@ -244,7 +242,7 @@ export function App() {
       <section className="workspace">
         <header className="window-header">
           <div>
-            <p className="eyebrow">EASYTODO</p>
+            <p className="eyebrow">EasyTodo <span>随手记，慢慢做</span></p>
             <h1>{view === 'active' ? '待办' : view === 'archive' ? '已归档' : '设置'}</h1>
           </div>
           <button className="icon-button close-window" aria-label="隐藏到托盘" title="隐藏到托盘" onClick={() => window.easyTodo.hidePanel()}><CloseIcon /></button>
@@ -262,7 +260,7 @@ export function App() {
               ref={composerRef}
               value={draft}
               rows={pendingImage ? 2 : 3}
-              placeholder={pendingImage ? '补充说明（可选）' : '记录一件事，或 Ctrl+V 粘贴截图…'}
+              placeholder={pendingImage ? '给这张截图写点说明…' : '记录一件事…'}
               onChange={(event) => setDraft(event.target.value)}
               onPaste={handlePaste}
               onKeyDown={(event) => {
@@ -273,8 +271,8 @@ export function App() {
               }}
             />
             <div className="composer-footer">
-              <span><kbd>Enter</kbd> 保存 · <kbd>Shift</kbd>+<kbd>Enter</kbd> 换行</span>
-              <button className="save-button" disabled={(!draft.trim() && !pendingImage) || saving} onClick={() => void createTodo()}>{saving ? '保存中' : '保存'}</button>
+              <span className="composer-hints"><span><ImageIcon /><kbd>Ctrl</kbd> + <kbd>V</kbd> 粘贴截图</span><span>Enter 保存 · Shift+Enter 换行</span></span>
+              <button className="save-button" disabled={(!draft.trim() && !pendingImage) || saving} onClick={() => void createTodo()}><CheckIcon />{saving ? '保存中' : '保存'}</button>
             </div>
           </section>
         )}
@@ -291,7 +289,7 @@ export function App() {
             ) : (
               todoGroups.map((group) => (
                 <div className="day-group" key={group.label}>
-                  <h2>{group.label}</h2>
+                  <h2><SunIcon />{group.label}<span className="group-line" /></h2>
                   {group.todos.map((todo) => (
                     <TodoCard
                       key={todo.id}
@@ -359,7 +357,7 @@ export function App() {
 }
 
 function NavButton({ label, active, count, onClick, children }: { label: string; active: boolean; count?: number; onClick(): void; children: React.ReactNode }) {
-  return <button className={`nav-button ${active ? 'active' : ''}`} aria-label={label} title={label} onClick={onClick}>{children}{typeof count === 'number' && count > 0 && <span>{count > 99 ? '99+' : count}</span>}</button>;
+  return <button className={`nav-button ${active ? 'active' : ''}`} aria-label={label} aria-current={active ? 'page' : undefined} title={label} onClick={onClick}>{children}<span className="nav-label">{label === '已归档' ? '归档' : label}</span>{typeof count === 'number' && count > 0 && <span className="nav-count">{count > 99 ? '99+' : count}</span>}</button>;
 }
 
 function TodoCard({ todo, archived, onArchive, onRestore, onDelete, onEdit, onZoom }: { todo: Todo; archived: boolean; onArchive(): void; onRestore(): void; onDelete(): void; onEdit(): void; onZoom(): void }) {
@@ -380,7 +378,7 @@ function TodoCard({ todo, archived, onArchive, onRestore, onDelete, onEdit, onZo
 }
 
 function EmptyState({ archive }: { archive: boolean }) {
-  return <div className="empty-state">{archive ? <ArchiveIcon /> : <ImageIcon />}<h2>{archive ? '还没有已归档内容' : '现在没有待办'}</h2><p>{archive ? '完成的待办会出现在这里' : '在上方输入文字，或粘贴一张截图'}</p></div>;
+  return <div className="empty-state"><div className="empty-illustration"><img src={brandIcon} alt="" />{archive ? <ArchiveIcon /> : <SunIcon />}</div><h2>{archive ? '完成的小事，都收在这里' : '今天，慢慢来就好'}</h2><p>{archive ? '完成一条待办，就会自动归档' : '记下一件小事，或贴一张截图'}</p></div>;
 }
 
 function SettingsPanel({ settings, shortcutDraft, setShortcutDraft, onUpdate }: { settings: Settings; shortcutDraft: string; setShortcutDraft(value: string): void; onUpdate(update: Partial<Settings>): Promise<void> }) {
@@ -406,7 +404,7 @@ function SettingsPanel({ settings, shortcutDraft, setShortcutDraft, onUpdate }: 
         </div>
         <p className="setting-hint">默认：CommandOrControl+Alt+Space</p>
       </div>
-      <div className="about-card"><div className="brand small"><CheckIcon /></div><div><strong>EasyTodo</strong><span>本地、快速、只做待办。</span></div></div>
+      <div className="about-card"><div className="brand small"><img src={brandIcon} alt="" /></div><div><strong>EasyTodo</strong><span>把小事记下来，把轻松留给自己。</span></div></div>
     </section>
   );
 }

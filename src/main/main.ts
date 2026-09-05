@@ -23,8 +23,8 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 const PANEL_WIDTH = 400;
-const HANDLE_WIDTH = 8;
-const HANDLE_HEIGHT = 52;
+const HANDLE_WIDTH = 24;
+const HANDLE_HEIGHT = 68;
 
 let panelWindow: BrowserWindow | null = null;
 let handleWindow: BrowserWindow | null = null;
@@ -52,12 +52,18 @@ function positionWindows(): void {
     width: PANEL_WIDTH,
     height: workArea.height,
   });
-  handleWindow?.setBounds({
-    x: workArea.x + workArea.width - HANDLE_WIDTH,
-    y: workArea.y + Math.round((workArea.height - HANDLE_HEIGHT) / 2),
-    width: HANDLE_WIDTH,
-    height: HANDLE_HEIGHT,
-  });
+  if (handleWindow) {
+    // Windows can enforce a larger native minimum. Anchor using the actual size,
+    // then clip both painting and mouse input to the small bookmark region.
+    handleWindow.setSize(HANDLE_WIDTH, HANDLE_HEIGHT);
+    const [width, height] = handleWindow.getSize();
+    handleWindow.setBounds({ x: workArea.x + workArea.width - width,
+      y: workArea.y + Math.round((workArea.height - height) / 2), width, height });
+    if (process.platform === 'win32' || process.platform === 'linux') {
+      handleWindow.setShape([{ x: width - HANDLE_WIDTH, y: Math.floor((height - HANDLE_HEIGHT) / 2),
+        width: HANDLE_WIDTH, height: HANDLE_HEIGHT }]);
+    }
+  }
 }
 
 function rendererUrl(mode?: 'handle'): string {
@@ -85,13 +91,17 @@ async function createWindows(): Promise<void> {
     width: PANEL_WIDTH,
     height: 800,
     frame: false,
+    thickFrame: false,
+    transparent: true,
     resizable: false,
     maximizable: false,
     minimizable: false,
     show: false,
     skipTaskbar: true,
     alwaysOnTop: true,
-    backgroundColor: '#f7f7f5',
+    // CSS draws the rounded paper; the native window must not fill its corners.
+    backgroundColor: '#00000000',
+    icon: path.join(__dirname, '../assets/icon.png'),
     webPreferences: {
       preload,
       contextIsolation: true,
@@ -112,8 +122,11 @@ async function createWindows(): Promise<void> {
     width: HANDLE_WIDTH,
     height: HANDLE_HEIGHT,
     frame: false,
+    thickFrame: false,
     transparent: true,
     resizable: false,
+    minimizable: false,
+    maximizable: false,
     focusable: false,
     show: false,
     skipTaskbar: true,
@@ -153,8 +166,7 @@ function collapsePanel(): void {
 }
 
 function createTray(): void {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" rx="8" fill="#6258d6"/><path d="M9 16.5l4.2 4.2L23.5 10.5" fill="none" stroke="white" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const icon = nativeImage.createFromDataURL(`data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`).resize({ width: 16, height: 16 });
+  const icon = nativeImage.createFromPath(path.join(__dirname, '../assets/tray.png'));
   tray = new Tray(icon);
   tray.setToolTip('EasyTodo');
   tray.setContextMenu(
@@ -231,6 +243,7 @@ function registerIpc(): void {
       app.setLoginItemSettings({ openAtLogin: update.launchAtLogin });
     }
     const settings = await store.updateSettings(update);
+    handleWindow?.webContents.send('settings:changed', settings);
     if (typeof update.launchAtLogin === 'boolean') createTrayMenuRefresh();
     return { ok: true, settings };
   });

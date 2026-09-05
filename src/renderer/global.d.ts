@@ -13,6 +13,7 @@ declare global {
       showPanelFromHandle(): void;
       requestCollapse(): void;
       hidePanel(): void;
+      onSettingsChanged(callback: (settings: Settings) => void): () => void;
       onFocusComposer(callback: () => void): () => void;
       onNavigate(callback: (view: 'active' | 'archive' | 'settings') => void): () => void;
     };

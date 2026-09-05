@@ -1,8 +1,16 @@
 {
-  "name": "easy-todo",
-  "version": "0.1.0",
+  "name": "EasyTodo",
+  "version": "1.0.0",
   "private": true,
-  "description": "A fast, edge-docked Windows todo capture app.",
+  "description": "EasyTodo — a local Windows todo app with a cozy cream-journal UI, screenshot capture and edge docking.",
+  "license": "MIT",
+  "homepage": "https://github.com/lwm98/EasyTodo#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lwm98/EasyTodo.git"
+  },
+  "bugs": { "url": "https://github.com/lwm98/EasyTodo/issues" },
+  "engines": { "node": ">=22.12.0" },
   "author": "EasyTodo",
   "main": "dist-main/main.js",
   "scripts": {
@@ -12,7 +20,8 @@
     "build:renderer": "vite build",
     "typecheck": "tsc -p tsconfig.renderer.json --noEmit && tsc -p tsconfig.main.json --noEmit",
     "test:store": "node tests/store-smoke.cjs",
-    "icon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-icon.ps1",
+    "test:ui": "node tests/ui-smoke.cjs",
+    "icon": "node scripts/generate-icon.cjs",
     "build": "npm run typecheck && npm run build:main && npm run build:renderer",
     "start": "electron .",
     "dist": "npm run icon && npm run build && electron-builder --win nsis"
@@ -37,6 +46,7 @@
   "build": {
     "appId": "com.easytodo.desktop",
     "productName": "EasyTodo",
+    "artifactName": "${productName}-Setup-${version}-${arch}.${ext}",
     "asar": true,
     "files": [
       "dist-main/**/*",
@@ -59,7 +69,7 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
+      "createDesktopShortcut": "always",
       "createStartMenuShortcut": true
     }
   }
