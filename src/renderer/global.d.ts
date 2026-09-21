@@ -13,6 +13,9 @@ declare global {
       showPanelFromHandle(): void;
       requestCollapse(): void;
       hidePanel(): void;
+      openImage(imageId: string): Promise<void>;
+      closeImage(): void;
+      showImageContextMenu(imageId: string): void;
       onSettingsChanged(callback: (settings: Settings) => void): () => void;
       onFocusComposer(callback: () => void): () => void;
       onNavigate(callback: (view: 'active' | 'archive' | 'settings') => void): () => void;

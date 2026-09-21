@@ -12,6 +12,9 @@ contextBridge.exposeInMainWorld('easyTodo', {
   showPanelFromHandle: () => ipcRenderer.send('panel:show-inactive'),
   requestCollapse: () => ipcRenderer.send('panel:collapse'),
   hidePanel: () => ipcRenderer.send('panel:hide'),
+  openImage: (imageId: string) => ipcRenderer.invoke('image:open', imageId),
+  closeImage: () => ipcRenderer.send('image:close'),
+  showImageContextMenu: (imageId: string) => ipcRenderer.send('image:context-menu', imageId),
   onSettingsChanged: (callback: (settings: Settings) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, settings: Settings) => callback(settings);
     ipcRenderer.on('settings:changed', listener);

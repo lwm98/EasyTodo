@@ -2,11 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App';
 import './styles.css';
-import { CheckIcon } from './icons';
+import { CheckIcon, CloseIcon } from './icons';
 import { applyTheme } from './theme';
 import type { ThemePreference } from './types';
 
-const isHandle = new URLSearchParams(window.location.search).get('mode') === 'handle';
+const params = new URLSearchParams(window.location.search);
+const mode = params.get('mode');
 
 function Handle() {
   const timer = React.useRef<number | undefined>(undefined);
@@ -40,6 +41,29 @@ function Handle() {
   );
 }
 
+function ImageViewer() {
+  const imageId = params.get('imageId') ?? '';
+  const [imageUrl, setImageUrl] = React.useState<string>();
+
+  React.useEffect(() => {
+    void window.easyTodo.getState().then((state) => {
+      setImageUrl(state.todos.find((todo) => todo.id === imageId)?.imageUrl);
+    });
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') window.easyTodo.closeImage();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [imageId]);
+
+  return (
+    <main className="fullscreen-viewer" role="dialog" aria-modal="true" aria-label="查看截图" onClick={() => window.easyTodo.closeImage()}>
+      <button className="viewer-close" aria-label="关闭图片" title="关闭 (Esc)" onClick={(event) => { event.stopPropagation(); window.easyTodo.closeImage(); }}><CloseIcon /></button>
+      {imageUrl && <img src={imageUrl} alt="截图大图" onClick={(event) => event.stopPropagation()} onContextMenu={(event) => { event.preventDefault(); window.easyTodo.showImageContextMenu(imageId); }} />}
+    </main>
+  );
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>{isHandle ? <Handle /> : <App />}</React.StrictMode>,
+  <React.StrictMode>{mode === 'handle' ? <Handle /> : mode === 'viewer' ? <ImageViewer /> : <App />}</React.StrictMode>,
 );

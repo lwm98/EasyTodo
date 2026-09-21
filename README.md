@@ -4,12 +4,12 @@
   <p><strong>随手记，慢慢做。</strong></p>
   <p>一枚贴在屏幕边缘的小书签，一本随时打开的奶油手帐。<br />把文字、截图和临时灵感，轻轻放进今天的待办里。</p>
   <p>
-    <a href="https://github.com/lwm98/EasyTodo/releases/tag/v1.0.0"><img src="https://img.shields.io/badge/version-1.0.0-DDA34B?style=flat-square" alt="Version 1.0.0" /></a>
+    <a href="https://github.com/lwm98/EasyTodo/releases/tag/v1.0.1"><img src="https://img.shields.io/badge/version-1.0.1-DDA34B?style=flat-square" alt="Version 1.0.1" /></a>
     <img src="https://img.shields.io/badge/Windows-x64-795638?style=flat-square" alt="Windows x64" />
     <img src="https://img.shields.io/badge/local-first-EBCB89?style=flat-square" alt="Local first" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-795638?style=flat-square" alt="MIT License" /></a>
   </p>
-  <p><a href="https://lwm98.github.io/EasyTodo/">项目主页</a> · <a href="https://github.com/lwm98/EasyTodo/releases/download/v1.0.0/EasyTodo-Setup-1.0.0-x64.exe"><strong>下载 Windows 安装包</strong></a> · <a href="#应用界面">应用界面</a> · <a href="#开发与构建">开发与构建</a> · <a href="https://github.com/lwm98/EasyTodo/issues">反馈建议</a></p>
+  <p><a href="https://lwm98.github.io/EasyTodo/">项目主页</a> · <a href="https://github.com/lwm98/EasyTodo/releases/download/v1.0.1/EasyTodo-Setup-1.0.1-x64.exe"><strong>下载 Windows 安装包</strong></a> · <a href="#应用界面">应用界面</a> · <a href="#开发与构建">开发与构建</a> · <a href="https://github.com/lwm98/EasyTodo/issues">反馈建议</a></p>
 </div>
 
 ## 把小事记下来，把轻松留给自己
@@ -43,27 +43,27 @@
 
 ![EasyTodo 奶油手帐视觉设计参考：应用面板、图标、书签把手与深色主题](docs/design-reference.png)
 
-## 1.0.0 功能
+## 功能
 
 - **快速记录**：输入文字、粘贴截图，或为图片补充说明；支持 PNG、JPEG、WebP、GIF，单张图片上限 25 MB。
 - **边缘常驻**：杏色书签把手停靠最右侧显示器；悬停展开，移开且未处于输入或弹窗交互时自动收起。
 - **键盘优先**：默认 `Ctrl+Alt+Space` 从任意应用打开并聚焦输入框；快捷键可在设置中修改。
 - **完成与回顾**：待办按创建日期分组，完成后自动归档；提供 5 秒撤销入口，归档内容可恢复。
-- **轻松整理**：双击文字编辑，双击图片放大；删除前二次确认，并同步清理对应图片文件。
+- **轻松整理**：双击文字编辑，双击图片全屏查看，右键图片可复制；删除前二次确认，并同步清理对应图片文件。
 - **主题联动**：浅色、深色、跟随系统三种模式，面板与书签把手同步切换。
-- **桌面整合**：系统托盘、可选开机启动、单实例运行，以及显示器变化自动适配。
+- **桌面整合**：系统托盘支持重新启动、可选开机启动、单实例运行，以及显示器变化自动适配。
 - **本地存储**：JSON 保存待办与设置，图片单独存放，无需配置数据库或服务器。
 
 ## 下载与使用
 
 适用于 **Windows 10 / 11 x64**。直接下载安装包，无需安装 Node.js。
 
-1. 在 [v1.0.0 Release](https://github.com/lwm98/EasyTodo/releases/tag/v1.0.0) 下载 `EasyTodo-Setup-1.0.0-x64.exe`。
+1. 在 [v1.0.1 Release](https://github.com/lwm98/EasyTodo/releases/tag/v1.0.1) 下载 `EasyTodo-Setup-1.0.1-x64.exe`。
 2. 运行安装程序，选择安装目录；完成后从桌面或开始菜单打开 EasyTodo。
 3. 将鼠标移到最右侧显示器中部的小书签，或按 `Ctrl+Alt+Space`。
 4. 输入文字或 `Ctrl+V` 粘贴截图，按 `Enter` 保存。
 
-关闭面板会回到屏幕边缘。需要完全退出时，在系统托盘右键菜单中选择“退出”。
+关闭面板会回到屏幕边缘。系统托盘右键菜单提供“重新启动”和“退出”。
 
 | 快捷操作 | 效果 |
 | --- | --- |
@@ -71,12 +71,13 @@
 | `Ctrl+Alt+Space` | 打开面板并聚焦输入框 |
 | `Ctrl+V` | 粘贴文字或剪贴板图片 |
 | `Enter` / `Shift+Enter` | 保存 / 换行 |
-| 双击待办文字 / 图片 | 编辑 / 查看大图 |
+| 双击待办文字 / 图片 | 编辑 / 全屏查看图片 |
+| 右键待办图片 | 复制图片 |
 | `Esc` | 关闭当前弹窗或隐藏面板 |
 
 ## 数据由你保管
 
-应用不需要登录，核心功能可离线使用。数据保存在 Electron 的 `userData` 目录；1.0.0 默认位于 `%APPDATA%\EasyTodo`：
+应用不需要登录，核心功能可离线使用。数据保存在 Electron 的 `userData` 目录，默认位于 `%APPDATA%\EasyTodo`：
 
 ```text
 EasyTodo/
@@ -111,7 +112,7 @@ npm run test:ui
 npm run dist -- --publish never
 ```
 
-安装包输出到 `release/EasyTodo-Setup-1.0.0-x64.exe`。界面测试使用独立测试数据，并刷新 `docs/preview.png` 与 `docs/preview-dark.png`。
+安装包输出到 `release/EasyTodo-Setup-1.0.1-x64.exe`。界面测试使用独立测试数据，并刷新 `docs/preview.png` 与 `docs/preview-dark.png`。
 
 | 技术 | 用途 |
 | --- | --- |

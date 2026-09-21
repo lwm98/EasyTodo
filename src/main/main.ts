@@ -1,6 +1,8 @@
 import {
   app,
   BrowserWindow,
+  clipboard,
+  ClipboardItem,
   globalShortcut,
   ipcMain,
   Menu,
@@ -10,6 +12,7 @@ import {
   screen,
   Tray,
 } from 'electron';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { LocalStore } from './store';
@@ -28,6 +31,7 @@ const HANDLE_HEIGHT = 68;
 
 let panelWindow: BrowserWindow | null = null;
 let handleWindow: BrowserWindow | null = null;
+let imageWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let store: LocalStore;
 let isQuitting = false;
@@ -66,17 +70,22 @@ function positionWindows(): void {
   }
 }
 
-function rendererUrl(mode?: 'handle'): string {
+function rendererUrl(mode?: 'handle' | 'viewer', imageId?: string): string {
   const developmentUrl = process.env.VITE_DEV_SERVER_URL;
-  if (developmentUrl) return `${developmentUrl}${mode ? `?mode=${mode}` : ''}`;
+  if (developmentUrl) {
+    const url = new URL(developmentUrl);
+    if (mode) url.searchParams.set('mode', mode);
+    if (imageId) url.searchParams.set('imageId', imageId);
+    return url.toString();
+  }
   return path.join(__dirname, '../dist/renderer/index.html');
 }
 
-async function loadRenderer(window: BrowserWindow, mode?: 'handle'): Promise<void> {
+async function loadRenderer(window: BrowserWindow, mode?: 'handle' | 'viewer', imageId?: string): Promise<void> {
   if (process.env.VITE_DEV_SERVER_URL) {
-    await window.loadURL(rendererUrl(mode));
+    await window.loadURL(rendererUrl(mode, imageId));
   } else {
-    await window.loadFile(rendererUrl(), mode ? { query: { mode } } : undefined);
+    await window.loadFile(rendererUrl(), mode ? { query: { mode, ...(imageId ? { imageId } : {}) } } : undefined);
   }
 }
 
@@ -148,6 +157,10 @@ async function createWindows(): Promise<void> {
 
 function showPanel(focusInput: boolean): void {
   if (!panelWindow || !handleWindow) return;
+  if (imageWindow) {
+    imageWindow.focus();
+    return;
+  }
   positionWindows();
   handleWindow.hide();
   if (focusInput) {
@@ -160,9 +173,74 @@ function showPanel(focusInput: boolean): void {
 }
 
 function collapsePanel(): void {
+  if (imageWindow) return;
   panelWindow?.hide();
   positionWindows();
   handleWindow?.showInactive();
+}
+
+async function openImageViewer(imageId: string): Promise<void> {
+  const todo = store.getTodos().find((item) => item.id === imageId && item.imageFile);
+  if (!todo) return;
+  if (imageWindow) {
+    await loadRenderer(imageWindow, 'viewer', imageId);
+    imageWindow.focus();
+    return;
+  }
+
+  const { bounds } = screen.getDisplayMatching(panelWindow?.getBounds() ?? screen.getPrimaryDisplay().bounds);
+  const viewer = new BrowserWindow({
+    ...bounds,
+    show: false,
+    fullscreen: true,
+    frame: false,
+    backgroundColor: '#090909',
+    autoHideMenuBar: true,
+    icon: path.join(__dirname, '../assets/icon.png'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+  imageWindow = viewer;
+  secureWindow(viewer);
+  viewer.on('closed', () => {
+    imageWindow = null;
+    if (!isQuitting) {
+      showPanel(false);
+      panelWindow?.focus();
+    }
+  });
+  try {
+    await loadRenderer(viewer, 'viewer', imageId);
+    panelWindow?.hide();
+    viewer.show();
+    viewer.focus();
+  } catch (error) {
+    viewer.close();
+    throw error;
+  }
+}
+
+function showImageContextMenu(window: BrowserWindow, imageId: string): void {
+  const todo = store.getTodos().find((item) => item.id === imageId && item.imageFile);
+  if (!todo?.imageFile) return;
+  const imagePath = path.join(store.imagesDirectory, path.basename(todo.imageFile));
+  const mimeType = ({ '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif' } as Record<string, string>)[path.extname(imagePath).toLowerCase()];
+  if (!mimeType) return;
+  Menu.buildFromTemplate([{
+    label: '复制图片',
+    click: async () => {
+      try {
+        const bytes = await readFile(imagePath);
+        await clipboard.write([new ClipboardItem({ [mimeType]: new Blob([new Uint8Array(bytes)], { type: mimeType }) })]);
+      } catch (error) {
+        console.error('无法复制图片', error);
+      }
+    },
+  }]).popup({ window });
 }
 
 function createTray(): void {
@@ -191,6 +269,14 @@ function createTray(): void {
         },
       },
       { type: 'separator' },
+      {
+        label: '重新启动',
+        click: () => {
+          isQuitting = true;
+          app.relaunch();
+          app.quit();
+        },
+      },
       {
         label: '退出',
         click: () => {
@@ -250,6 +336,12 @@ function registerIpc(): void {
   ipcMain.on('panel:show-inactive', () => showPanel(false));
   ipcMain.on('panel:collapse', () => collapsePanel());
   ipcMain.on('panel:hide', () => collapsePanel());
+  ipcMain.handle('image:open', (_event, imageId: string) => openImageViewer(imageId));
+  ipcMain.on('image:close', () => imageWindow?.close());
+  ipcMain.on('image:context-menu', (event, imageId: string) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (window) showImageContextMenu(window, imageId);
+  });
 }
 
 app.on('second-instance', () => showPanel(true));

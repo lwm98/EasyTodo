@@ -170,7 +170,7 @@ kbd { padding: 1px 4px; border: 1px solid var(--line); border-bottom-width: 2px;
 .undo-toast { position: absolute; right: 16px; bottom: 18px; left: 82px; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 12px; border: 1px solid #a48357; border-radius: 12px; color: #fff3d9; background: #543c2a; box-shadow: var(--shadow); font-size: 11px; }
 .undo-toast span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .undo-toast button { flex-shrink: 0; border: 0; color: #ffda7b; background: transparent; font-weight: 700; cursor: pointer; }
-.modal-backdrop, .image-viewer { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; padding: 22px; background: rgba(12,12,11,.48); backdrop-filter: blur(5px); }
+.modal-backdrop { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; padding: 22px; background: rgba(12,12,11,.48); backdrop-filter: blur(5px); }
 .modal { width: 100%; padding: 17px; border: 1px solid var(--line); border-radius: 17px; background: var(--surface); box-shadow: var(--shadow); }
 .modal-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .modal h2 { margin: 0; font-size: 16px; }
@@ -186,8 +186,8 @@ kbd { padding: 1px 4px; border: 1px solid var(--line); border-bottom-width: 2px;
 .danger-icon { display: grid; place-items: center; width: 40px; height: 40px; margin: 0 auto 11px; border-radius: 12px; color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, var(--surface)); }
 .danger-icon svg { width: 20px; }
 .confirm-modal .modal-actions { justify-content: center; }
-.image-viewer { padding: 18px; background: rgba(5,5,5,.86); }
-.image-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
+.fullscreen-viewer { position: relative; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; padding: 28px; background: #090909; }
+.fullscreen-viewer img { display: block; max-width: calc(100vw - 56px); max-height: calc(100vh - 56px); object-fit: contain; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
 .viewer-close { position: absolute; top: 13px; right: 13px; z-index: 1; display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 10px; color: white; background: rgba(255,255,255,.15); cursor: pointer; }
 .viewer-close svg { width: 18px; }
 

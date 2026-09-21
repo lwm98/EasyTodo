@@ -63,7 +63,6 @@ export function App() {
   const [editText, setEditText] = useState('');
   const [removeEditImage, setRemoveEditImage] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Todo>();
-  const [zoomedImage, setZoomedImage] = useState<string>();
   const [undoTodo, setUndoTodo] = useState<Todo>();
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -103,14 +102,13 @@ export function App() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
-      if (zoomedImage) setZoomedImage(undefined);
-      else if (deleteTarget) setDeleteTarget(undefined);
+      if (deleteTarget) setDeleteTarget(undefined);
       else if (editing) setEditing(undefined);
       else window.easyTodo.hidePanel();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [deleteTarget, editing, zoomedImage]);
+  }, [deleteTarget, editing]);
 
   const activeTodos = useMemo(() => state.todos.filter((todo) => !todo.archivedAt), [state.todos]);
   const archivedTodos = useMemo(() => state.todos.filter((todo) => todo.archivedAt), [state.todos]);
@@ -130,7 +128,7 @@ export function App() {
     pointerInside.current = false;
     window.clearTimeout(collapseTimer.current);
     const interactionLocked = Boolean(
-      document.activeElement === composerRef.current || editing || deleteTarget || zoomedImage,
+      document.activeElement === composerRef.current || editing || deleteTarget,
     );
     if (!interactionLocked) {
       collapseTimer.current = window.setTimeout(() => window.easyTodo.requestCollapse(), 500);
@@ -299,7 +297,7 @@ export function App() {
                       onRestore={async () => { await window.easyTodo.restoreTodo(todo.id); await reload(); }}
                       onDelete={() => setDeleteTarget(todo)}
                       onEdit={() => beginEdit(todo)}
-                      onZoom={() => todo.imageUrl && setZoomedImage(todo.imageUrl)}
+                      onZoom={() => void window.easyTodo.openImage(todo.id).catch(() => setError('无法打开图片'))}
                     />
                   ))}
                 </div>
@@ -325,7 +323,7 @@ export function App() {
           <section className="modal" role="dialog" aria-modal="true" aria-label="编辑待办">
             <div className="modal-title"><h2>编辑待办</h2><button className="icon-button" onClick={() => setEditing(undefined)}><CloseIcon /></button></div>
             {editing.imageUrl && !removeEditImage && (
-              <div className="edit-image"><img src={editing.imageUrl} alt="待办截图" /><button onClick={() => setRemoveEditImage(true)}><TrashIcon />移除图片</button></div>
+              <div className="edit-image"><img src={editing.imageUrl} alt="待办截图" onContextMenu={(event) => { event.preventDefault(); window.easyTodo.showImageContextMenu(editing.id); }} /><button onClick={() => setRemoveEditImage(true)}><TrashIcon />移除图片</button></div>
             )}
             <textarea autoFocus value={editText} rows={5} placeholder="添加文字说明" onChange={(event) => setEditText(event.target.value)} onKeyDown={(event) => {
               if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void saveEdit(); }
@@ -346,12 +344,6 @@ export function App() {
         </div>
       )}
 
-      {zoomedImage && (
-        <div className="image-viewer" role="dialog" aria-modal="true" aria-label="查看截图" onClick={() => setZoomedImage(undefined)}>
-          <button className="viewer-close" aria-label="关闭"><CloseIcon /></button>
-          <img src={zoomedImage} alt="截图大图" onClick={(event) => event.stopPropagation()} />
-        </div>
-      )}
     </main>
   );
 }
@@ -365,7 +357,7 @@ function TodoCard({ todo, archived, onArchive, onRestore, onDelete, onEdit, onZo
     <article className={`todo-card ${archived ? 'archived' : ''}`}>
       <button className={`complete-button ${archived ? 'done' : ''}`} aria-label={archived ? '已完成' : '标记完成'} onClick={archived ? undefined : onArchive}>{archived && <CheckIcon />}</button>
       <div className="todo-content" onDoubleClick={onEdit}>
-        {todo.imageUrl && <button className="todo-image" onDoubleClick={(event) => { event.stopPropagation(); onZoom(); }} title="双击查看大图"><img src={todo.imageUrl} alt="待办截图" /></button>}
+        {todo.imageUrl && <button className="todo-image" onDoubleClick={(event) => { event.stopPropagation(); onZoom(); }} onContextMenu={(event) => { event.preventDefault(); window.easyTodo.showImageContextMenu(todo.id); }} title="双击全屏查看"><img src={todo.imageUrl} alt="待办截图" /></button>}
         {todo.text && <p>{todo.text}</p>}
         <time dateTime={todo.createdAt}>{formatCreatedTime(todo.createdAt)}</time>
       </div>

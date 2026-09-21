@@ -1,6 +1,6 @@
 {
   "name": "EasyTodo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "EasyTodo — a local Windows todo app with a cozy cream-journal UI, screenshot capture and edge docking.",
   "license": "MIT",
